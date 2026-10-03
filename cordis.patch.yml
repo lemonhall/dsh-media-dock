@@ -42,8 +42,9 @@
         subtitleLangs: 'zh-Hans,zh-CN,zh,en'
         # 没有字幕才转写；每段多少秒（官方 API 是有界的，别一次喂太长）
         transcribeChunkSeconds: 240
-        # 转写语言（SenseVoice 中文用 zh）
-        transcribeLanguage: 'zh'
+        # 转写语言：默认 auto（让 SenseVoice 自己判）。硬编码 zh 会把英文音频按中文解码，
+        # 实测会冒出"那那s错"这种混合垃圾；抖音里中英夹杂更是常态。
+        transcribeLanguage: 'auto'
         # 一次最多并行几个下载
         maxConcurrent: 1
         # 队列里最多留多少条历史
