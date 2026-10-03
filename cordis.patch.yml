@@ -1,0 +1,50 @@
+# ============================================================================
+# dsh-media-dock —— DSH bundle patch
+# ============================================================================
+# 右侧栏「媒体台」：抖音/YouTube 链接进来 → 本机下载 → 转写 → 字幕 → Agent 总结。
+#
+# 三段流水线，每段都用本机已有的东西：
+#   ① yt-dlp（本机已装，走 127.0.0.1:7897 代理）下载；优先抓现成字幕（零成本）
+#   ② 没字幕才 ffmpeg 转 16kHz 单声道 PCM16 WAV —— 这是官方 speechToText 唯一接受的格式
+#   ③ ctx.speechToText.transcribe()（SenseVoice，本地跑，中文强）
+#
+# ⚠️ 关于 STT：按官方契约用 **optional access**（`ctx.get('speechToText')` + undefined 检查），
+#    所以**装不装语音输入插件都能用** —— 没 STT 就只抓现成字幕。契约见：
+#      SpeechRequest { audio: Uint8Array; providerId?; language? }
+#      transcribe(resolve(request), signal) → Transcript { text; audioSeconds; inferenceSeconds }
+#    注意宿主 Service 收的是 **Uint8Array**（base64 只在浏览器 Remote 那层）。
+#    另外它「有界」（maxAudioBytes/maxDurationSeconds）且**不留转写历史** —— 所以长视频
+#    由本插件自己切段，字幕由本插件自己存。
+#
+# 安装：
+#   plugin_manager install_bundle  target=link:E:\development\dsh-media-dock
+# ⚠️ 客户端半边改动要重启应用；新增宿主路由也要重启（实测）。
+# ============================================================================
+
+- insert:
+    - id: dsh-media-dock
+      name: dsh-media-dock
+      config:
+        # 下载产物放这儿（柠檬叔要求一律 E 盘）
+        outputDir: 'E:\development\dsh-media'
+        # 本机工具；留空则用 PATH 里的
+        ytDlpPath: 'C:\Users\lemon\AppData\Local\Microsoft\WinGet\Links\yt-dlp.exe'
+        ffmpegPath: 'C:\ProgramData\chocolatey\bin\ffmpeg.exe'
+        # yt-dlp 走本地代理（境外站点必须；抖音也可走）
+        proxy: 'http://127.0.0.1:7897'
+        useProxy: true
+        # 登录墙站点（抖音/X）需要 cookie 时打开；对应 SKILL 里的
+        # `--cookies-from-browser chrome`（注意 Chrome 运行时 cookie 库被锁，
+        # 要先复制一份，见 video-download SKILL）
+        cookiesFromBrowser: ''
+        # 优先抓现成字幕（零成本），支持的语言按优先级
+        preferSubtitles: true
+        subtitleLangs: 'zh-Hans,zh-CN,zh,en'
+        # 没有字幕才转写；每段多少秒（官方 API 是有界的，别一次喂太长）
+        transcribeChunkSeconds: 240
+        # 转写语言（SenseVoice 中文用 zh）
+        transcribeLanguage: 'zh'
+        # 一次最多并行几个下载
+        maxConcurrent: 1
+        # 队列里最多留多少条历史
+        keepItems: 50

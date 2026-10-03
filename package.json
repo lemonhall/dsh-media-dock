@@ -1,0 +1,55 @@
+{
+  "name": "dsh-media-dock",
+  "version": "0.1.0",
+  "description": "DSH 右侧栏的媒体台：把抖音/YouTube 链接丢进来，本机 yt-dlp 下载、ffmpeg 转 16k 单声道 WAV、官方 speechToText（SenseVoice）转写，字幕进面板，Agent 一键总结。",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "cordis.patch.yml",
+    "icon.svg"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "dsh-bundle",
+    "deepseek-harness",
+    "yt-dlp",
+    "transcribe",
+    "speech-to-text",
+    "douyin",
+    "youtube",
+    "sidebar"
+  ],
+  "author": "lemonhall",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lemonhall/dsh-media-dock.git"
+  },
+  "homepage": "https://github.com/lemonhall/dsh-media-dock#readme",
+  "bugs": {
+    "url": "https://github.com/lemonhall/dsh-media-dock/issues"
+  },
+  "meta": {
+    "title": "媒体台",
+    "description": "右侧栏一个 tab：抖音/YouTube 链接进来，本机下载 → 本地转写 → 字幕进面板 → 让 Agent 总结。"
+  },
+  "icon": "./icon.svg",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-sidebar-right"
+      ]
+    }
+  }
+}
