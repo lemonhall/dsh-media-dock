@@ -74,9 +74,19 @@ lib/client.js   右侧栏 tab（整个模块包在 IIFE 里 —— DSH 把所有
 
 ## 已知限制
 
-- **抖音 / X 不能嵌在侧栏里看**：抖音会认出 Electron webview（页面外壳能加载、播放器一直"加载中"），
-  而官方那个 browser tab 的 webview 不归第三方管、改不了。所以这两个走**系统浏览器**刷 + 剪贴板扒。
-  YouTube 不受影响，可以真"边看边扒"。
+- **抖音不能嵌在侧栏里看**（X 大概率同理）。这不是"还没做"，是**四条路都试过、全堵**，都实测过：
+
+  | 试的路 | 结果 |
+  | --- | --- |
+  | 侧栏 webview 开桌面版 | 页面外壳能加载、播放器一直"加载中" —— 它认出了 Electron 的 UA |
+  | 启动参数 `--user-agent=<普通 Chrome>` | **被应用自己的 `setUserAgent` 覆盖**（UA 字符串里带 `dsh-desktop`），无效 |
+  | 插件里 `import('electron')` 改 `session.defaultSession` | 只拿到 npm 空壳包；`createRequire` 也 `Cannot find module 'electron'` |
+  | `m.douyin.com` / `?is_from_mobile_home=1` | **404**（TLB）—— 移动页要移动 UA，同一把锁 |
+  | 换开发版的 web profile（那边是 `<iframe>`） | 抖音回 `X-Frame-Options: DENY` + CSP `frame-ancestors` 白名单，**连页面都不给** |
+
+  根因只有一个：**webview 的 User-Agent 由应用主进程设死，插件改不到**。官方那个 browser tab 不归第三方管，
+  而第三方自己渲染 `<webview>` 会白屏（实测）。所以：**抖音走系统浏览器刷 + 「📋 扒剪贴板」扒字幕**。
+  YouTube 完全不受影响 —— 能嵌、能播、直播都能播，可以真"边看边扒"。
 - **抖音必须带 cookie**（`Fresh cookies (not necessarily logged in) are needed`）。默认会自动把 Chrome 的
   cookie 库**复制成迷你 profile** 再读（绕开 issue 7271 的锁，Chrome 开着也行）；也可以配 `cookiesFile`
   指向导出的 `cookies.txt`（最稳，不受 Chrome 运行状态影响）。
