@@ -25,14 +25,21 @@
     - id: dsh-media-dock
       name: dsh-media-dock
       config:
-        # 下载产物放这儿（柠檬叔要求一律 E 盘）
-        outputDir: 'E:\development\dsh-media'
-        # 本机工具；留空则用 PATH 里的
+        # 下载产物放哪儿。**留空** = 落 $DSH_HOME/dsh-media。
+        # ⚠️ 别写死某台机器的绝对路径：这个文件在 files 白名单里、**会随包发布**，
+        # 而在 macOS/Linux 上 mkdirSync('E:\development\dsh-media') 会建出一个怪目录
+        #（维护者在 PR #18 上本机复现）。要用别的目录就填**当前机器上真实存在**的路径。
+        outputDir: ''
+        # 本机工具；留空则用 PATH 里的（有 pickExecutable 兜底，这两项安全）
         ytDlpPath: 'C:\Users\lemon\AppData\Local\Microsoft\WinGet\Links\yt-dlp.exe'
         ffmpegPath: 'C:\ProgramData\chocolatey\bin\ffmpeg.exe'
-        # yt-dlp 走本地代理（境外站点必须；抖音也可走）
-        proxy: 'http://127.0.0.1:7897'
-        useProxy: true
+        # ⚠️ 代理默认**关**。原来这里写死 http://127.0.0.1:7897 且 useProxy: true，
+        # 而 useProxy=true 是**对所有站点**生效（proxyForSite），别人装上后 yt-dlp
+        # 一律带这个代理，端口不在就整条流水线失败。
+        # 代码里的默认值 'auto' 才是安全档（只对 proxySites 里列的站点走代理）。
+        # 要用就显式打开，并把 proxySites 限定到确实需要代理的站点。
+        proxy: ''
+        useProxy: 'auto'
         # 登录墙站点（抖音/X）需要 cookie 时打开；对应 SKILL 里的
         # `--cookies-from-browser chrome`（注意 Chrome 运行时 cookie 库被锁，
         # 要先复制一份，见 video-download SKILL）
