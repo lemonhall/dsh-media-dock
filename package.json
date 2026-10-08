@@ -1,6 +1,6 @@
 {
   "name": "dsh-media-dock",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "DSH 右侧栏的媒体台：把抖音/YouTube 链接丢进来，本机 yt-dlp 下载、ffmpeg 转 16k 单声道 WAV、官方 speechToText（SenseVoice）转写，字幕进面板，Agent 一键总结。",
   "type": "module",
   "main": "lib/index.js",
